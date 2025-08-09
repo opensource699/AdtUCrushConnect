@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dating App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .app-container {
+            width: 375px;
+            height: 812px;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px 10px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .signal-indicators {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .auth-screen, .profile-screen {
+            padding: 40px 30px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .auth-screen {
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .profile-screen {
+            display: none;
+        }
+        
+        .app-title {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .app-subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 40px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .auth-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-bottom: 15px;
+        }
+        
+        .auth-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .auth-button:disabled {
+            opacity: 0.6;
+            transform: none;
+        }
+        
+        .switch-auth {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .profile-header {
+            position: relative;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .profile-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px;
+        }
+        
+        .profile-info {
+            padding: 20px;
+            background: white;
+            border-radius: 20px;
+            margin: -30px 0 20px 0;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 2;
+        }
+        
+        .profile-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .profile-bio {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .interest-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tag {
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .action-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: transform 0.2s;
+        }
+        
+        .action-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .reject-btn {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .like-btn {
+            background: #51cf66;
+            color: white;
+        }
+        
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #f0f0f0;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            min-width: 60px;
+        }
+        
+        .nav-icon {
+            font-size: 22px;
+            margin-bottom: 4px;
+            transition: transform 0.2s ease;
+        }
+        
+        .nav-label {
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .nav-item {
+            color: #999;
+        }
+        
+        .nav-item.active {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .nav-item.active .nav-icon {
+            transform: scale(1.1);
+        }
+        
+        .nav-item:hover:not(.active) {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .notification-badge {
+            position: relative;
+        }
+        
+        .notification-badge::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            background: #ff4757;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        
+        .logout-btn {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            padding: 8px 16px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="status-bar">
+            <span>9:41</span>
+            <div class="signal-indicators">
+                <span>📶</span>
+                <span>📶</span>
+                <span>🔋</span>
+            </div>
+        </div>
+        
+        <!-- Auth Screen -->
+        <div id="authScreen" class="auth-screen">
+            <div class="app-title">HeartSync</div>
+            <div class="app-subtitle">Find your perfect match</div>
+            
+            <div id="authForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Enter your email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password">
+                </div>
+                
+                <div class="form-group" id="nameGroup" style="display: none;">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" placeholder="Enter your full name">
+                </div>
+                
+                <div class="form-group" id="enrollmentGroup" style="display: none;">
+                    <label for="enrollmentId">Enrollment ID</label>
+                    <input type="text" id="enrollmentId" placeholder="Enter your enrollment ID">
+                </div>
+                
+                <button id="authButton" class="auth-button">Sign In</button>
+                
+                <div>
+                    <span id="switchText">Don't have an account? </span>
+                    <a href="#" id="switchMode" class="switch-auth">Sign Up</a>
+                </div>
+                
+                <div id="errorMessage" class="error-message" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <!-- Profile Screen -->
+        <div id="profileScreen" class="profile-screen">
+            <button id="logoutBtn" class="logout-btn">Logout</button>
+            
+            <div class="profile-header">
+                <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'><rect width='300' height='400' fill='%23667eea'/><circle cx='150' cy='140' r='60' fill='white' opacity='0.3'/><rect x='75' y='220' width='150' height='80' rx='10' fill='white' opacity='0.2'/></svg>" alt="Profile" class="profile-image" id="profileImage">
+            </div>
+            
+            <div class="profile-info">
+                <div class="profile-name" id="profileName">Sherina Jane</div>
+                <div class="profile-bio">Passionate traveler and food enthusiast. She loves exploring new cultures through their cuisines and believes in living life to the fullest.</div>
+                
+                <div class="interest-tags">
+                    <span class="tag">Anime</span>
+                    <span class="tag">Music</span>
+                    <span class="tag">Books</span>
+                    <span class="tag">Travel</span>
+                    <span class="tag">Movie</span>
+                    <span class="tag">English</span>
+                    <span class="tag">Physical Touch</span>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="action-btn reject-btn">✕</button>
+                    <button class="action-btn like-btn">♥</button>
+                </div>
+            </div>
+            
+            <div class="bottom-nav">
+                <div class="nav-item active" data-tab="home">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">Home</div>
+                </div>
+                <div class="nav-item" data-tab="messages">
+                    <div class="nav-icon">💬</div>
+                    <div class="nav-label">Messages</div>
+                </div>
+                <div class="nav-item notification-badge" data-tab="notifications">
+                    <div class="nav-icon">🔔</div>
+                    <div class="nav-label">Alerts</div>
+                </div>
+                <div class="nav-item" data-tab="profile">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">Profile</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDsi9lJDQzAuxAiAJFXMw-_Ht_cZdIEcHA",
+            authDomain: "login-2a7b4.firebaseapp.com",
+            projectId: "login-2a7b4",
+            storageBucket: "login-2a7b4.firebasestorage.app",
+            messagingSenderId: "1080688985204",
+            appId: "1:1080688985204:web:e2be4564f13984e3393d21",
+            measurementId: "G-5F7G2P877D"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // DOM elements
+        const authScreen = document.getElementById('authScreen');
+        const profileScreen = document.getElementById('profileScreen');
+        const authButton = document.getElementById('authButton');
+        const switchMode = document.getElementById('switchMode');
+        const switchText = document.getElementById('switchText');
+        const nameGroup = document.getElementById('nameGroup');
+        const errorMessage = document.getElementById('errorMessage');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const profileName = document.getElementById('profileName');
+
+        let isSignUp = false;
+
+        // Switch between sign in and sign up
+        switchMode.addEventListener('click', (e) => {
+            e.preventDefault();
+            isSignUp = !isSignUp;
+            
+            if (isSignUp) {
+                authButton.textContent = 'Sign Up';
+                switchText.textContent = 'Already have an account? ';
+                switchMode.textContent = 'Sign In';
+                nameGroup.style.display = 'block';
+                document.getElementById('enrollmentGroup').style.display = 'block';
+            } else {
+                authButton.textContent = 'Sign In';
+                switchText.textContent = "Don't have an account? ";
+                switchMode.textContent = 'Sign Up';
+                nameGroup.style.display = 'none';
+                document.getElementById('enrollmentGroup').style.display = 'none';
+            }
+            hideError();
+        });
+
+        // Show error message
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        // Hide error message
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+
+        // Handle authentication
+        authButton.addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const fullName = document.getElementById('fullName').value;
+            const enrollmentId = document.getElementById('enrollmentId').value;
+
+            if (!email || !password) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            if (isSignUp && (!fullName || !enrollmentId)) {
+                showError('Please fill in all required fields');
+                return;
+            }
+
+            // Strong password validation for sign up
+            if (isSignUp) {
+                const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+                if (!passwordRegex.test(password)) {
+                    showError('Password must be at least 8 characters with uppercase, lowercase, number, and special character');
+                    return;
+                }
+            }
+
+            authButton.disabled = true;
+            authButton.textContent = 'Loading...';
+            hideError();
+
+            try {
+                if (isSignUp) {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await updateProfile(userCredential.user, {
+                        displayName: fullName
+                    });
+                    
+                    // Store enrollment ID in user's profile (you can also use Firestore for this)
+                    console.log('User created with enrollment ID:', enrollmentId);
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
+            } catch (error) {
+                let errorMsg = 'Authentication failed';
+                
+                switch (error.code) {
+                    case 'auth/email-already-in-use':
+                        errorMsg = 'Email already in use';
+                        break;
+                    case 'auth/weak-password':
+                        errorMsg = 'Password should be at least 6 characters';
+                        break;
+                    case 'auth/user-not-found':
+                        errorMsg = 'User not found';
+                        break;
+                    case 'auth/wrong-password':
+                        errorMsg = 'Invalid password';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMsg = 'Invalid email format';
+                        break;
+                }
+                
+                showError(errorMsg);
+            } finally {
+                authButton.disabled = false;
+                authButton.textContent = isSignUp ? 'Sign Up' : 'Sign In';
+            }
+        });
+
+        // Handle logout
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        });
+
+        // Sample user profiles data
+        const sampleProfiles = [
+            {
+                name: "Emma Rodriguez",
+                age: 24,
+                bio: "Adventure seeker and coffee enthusiast. Love hiking, photography, and discovering hidden gems around the city. Looking for someone to share spontaneous adventures with!",
+                image: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'><defs><linearGradient id='grad1' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%23ff9a9e;stop-opacity:1' /><stop offset='100%' style='stop-color:%23fecfef;stop-opacity:1' /></linearGradient></defs><rect width='300' height='400' fill='url(%23grad1)'/><circle cx='150' cy='140' r='60' fill='white' opacity='0.3'/><rect x='75' y='220' width='150' height='80' rx='10' fill='white' opacity='0.2'/></svg>",
+                tags: ["Travel", "Photography", "Coffee", "Hiking", "Art", "Music"]
+            },
+            {
+                name: "Alex Chen",
+                age: 26,
+                bio: "Software developer by day, musician by night. I play guitar and love jamming with friends. Always up for good conversations about tech, music, or life in general.",
+                image: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'><defs><linearGradient id='grad2' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%23667eea;stop-opacity:1' /><stop offset='100%' style='stop-color:%23764ba2;stop-opacity:1' /></linearGradient></defs><rect width='300' height='400' fill='url(%23grad2)'/><circle cx='150' cy='140' r='60' fill='white' opacity='0.3'/><rect x='75' y='220' width='150' height='80' rx='10' fill='white' opacity='0.2'/></svg>",
+                tags: ["Programming", "Guitar", "Music", "Gaming", "Books", "Coffee"]
+            },
+            {
+                name: "Sophia Martinez",
+                age: 23,
+                bio: "Yoga instructor and wellness enthusiast. Passionate about healthy living, meditation, and helping others find their inner peace. Let's find balance together!",
+                image: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'><defs><linearGradient id='grad3' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%2348c6ef;stop-opacity:1' /><stop offset='100%' style='stop-color:%236bcf7f;stop-opacity:1' /></linearGradient></defs><rect width='300' height='400' fill='url(%23grad3)'/><circle cx='150' cy='140' r='60' fill='white' opacity='0.3'/><rect x='75' y='220' width='150' height='80' rx='10' fill='white' opacity='0.2'/></svg>",
+                tags: ["Yoga", "Wellness", "Meditation", "Fitness", "Nature", "Mindfulness"]
+            },
+            {
+                name: "Ryan Thompson",
+                age: 28,
+                bio: "Chef and food lover exploring culinary arts. I believe the way to someone's heart is through amazing food. Let's cook something delicious together!",
+                image: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'><defs><linearGradient id='grad4' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%23fa709a;stop-opacity:1' /><stop offset='100%' style='stop-color:%23fee140;stop-opacity:1' /></linearGradient></defs><rect width='300' height='400' fill='url(%23grad4)'/><circle cx='150' cy='140' r='60' fill='white' opacity='0.3'/><rect x='75' y='220' width='150' height='80' rx='10' fill='white' opacity='0.2'/></svg>",
+                tags: ["Cooking", "Food", "Restaurants", "Wine", "Travel", "Culture"]
+            },
+            {
+                name: "Maya Patel",
+                age: 25,
+                bio: "Artist and creative soul. I paint, sketch, and find beauty in everyday moments. Looking for someone who appreciates art and isn't afraid to get a little paint on their hands!",
+                image: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'><defs><linearGradient id='grad5' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%23a8edea;stop-opacity:1' /><stop offset='100%' style='stop-color:%23fed6e3;stop-opacity:1' /></linearGradient></defs><rect width='300' height='400' fill='url(%23grad5)'/><circle cx='150' cy='140' r='60' fill='white' opacity='0.3'/><rect x='75' y='220' width='150' height='80' rx='10' fill='white' opacity='0.2'/></svg>",
+                tags: ["Art", "Painting", "Museums", "Creativity", "Design", "Photography"]
+            }
+        ];
+
+        let currentProfileIndex = 0;
+        let currentUser = null;
+
+        // Function to load and display a profile
+        function loadProfile(index) {
+            if (index >= sampleProfiles.length) {
+                currentProfileIndex = 0;
+                index = 0;
+            }
+            
+            const profile = sampleProfiles[index];
+            const profileImage = document.getElementById('profileImage');
+            const profileBio = document.querySelector('.profile-bio');
+            const tagsContainer = document.querySelector('.interest-tags');
+            
+            // Update profile information
+            profileName.textContent = `${profile.name}, ${profile.age}`;
+            profileImage.src = profile.image;
+            profileBio.textContent = profile.bio;
+            
+            // Update tags
+            tagsContainer.innerHTML = '';
+            profile.tags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag';
+                tagElement.textContent = tag;
+                tagsContainer.appendChild(tagElement);
+            });
+            
+            // Add swipe animation
+            profileImage.style.transform = 'scale(0.95)';
+            profileImage.style.opacity = '0.8';
+            setTimeout(() => {
+                profileImage.style.transform = 'scale(1)';
+                profileImage.style.opacity = '1';
+            }, 200);
+        }
+
+        // Monitor auth state
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                // User is signed in
+                authScreen.style.display = 'none';
+                profileScreen.style.display = 'flex';
+                
+                // Load first profile from other users
+                loadProfile(currentProfileIndex);
+            } else {
+                // User is signed out
+                authScreen.style.display = 'flex';
+                profileScreen.style.display = 'none';
+                currentUser = null;
+            }
+        });
+
+        // Handle action buttons
+        document.querySelector('.reject-btn').addEventListener('click', () => {
+            // Add swipe left animation
+            const profileHeader = document.querySelector('.profile-header');
+            profileHeader.style.transform = 'translateX(-100%) rotate(-10deg)';
+            profileHeader.style.opacity = '0';
+            
+            setTimeout(() => {
+                currentProfileIndex++;
+                loadProfile(currentProfileIndex);
+                profileHeader.style.transform = 'translateX(0) rotate(0)';
+                profileHeader.style.opacity = '1';
+            }, 300);
+            
+            console.log('Profile rejected');
+        });
+
+        document.querySelector('.like-btn').addEventListener('click', () => {
+            // Add swipe right animation
+            const profileHeader = document.querySelector('.profile-header');
+            profileHeader.style.transform = 'translateX(100%) rotate(10deg)';
+            profileHeader.style.opacity = '0';
+            
+            setTimeout(() => {
+                currentProfileIndex++;
+                loadProfile(currentProfileIndex);
+                profileHeader.style.transform = 'translateX(0) rotate(0)';
+                profileHeader.style.opacity = '1';
+            }, 300);
+            
+            console.log('Profile liked - It\'s a match! 💕');
+            
+            // You could show a match popup here
+            showMatchNotification();
+        });
+        
+        function showMatchNotification() {
+            // Create a simple match notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                color: white;
+                padding: 20px 30px;
+                border-radius: 15px;
+                font-size: 18px;
+                font-weight: bold;
+                z-index: 1000;
+                animation: matchPop 2s ease-in-out forwards;
+            `;
+            notification.textContent = "It's a Match! 💕";
+            document.body.appendChild(notification);
+            
+            // Add CSS animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes matchPop {
+                    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+                    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+                    40% { transform: translate(-50%, -50%) scale(1); }
+                    80% { opacity: 1; }
+                    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Remove notification after animation
+            setTimeout(() => {
+                notification.remove();
+                style.remove();
+            }, 2000);
+        }
+
+        // Handle navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                // Remove active class from all nav items
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                // Add active class to clicked item
+                item.classList.add('active');
+                
+                const tab = item.dataset.tab;
+                handleTabChange(tab);
+            });
+        });
+        
+        function handleTabChange(tab) {
+            switch(tab) {
+                case 'home':
+                    console.log('Home tab selected');
+                    // Show current profile or reload profiles
+                    if (currentUser) {
+                        loadProfile(currentProfileIndex);
+                    }
+                    break;
+                case 'messages':
+                    console.log('Messages tab selected');
+                    // Show messages/chat list
+                    alert('Messages feature coming soon! 💬');
+                    break;
+                case 'notifications':
+                    console.log('Notifications tab selected');
+                    // Show notifications/alerts
+                    alert('You have new matches! 🔔');
+                    break;
+                case 'profile':
+                    console.log('Profile tab selected');
+                    // Show user's own profile
+                    if (currentUser) {
+                        const userName = currentUser.displayName || currentUser.email.split('@')[0];
+                        alert(`Welcome ${userName}! 👤\n\nProfile settings coming soon...`);
+                    }
+                    break;
+            }
+        }
+
+        // Handle keyboard events
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && authScreen.style.display !== 'none') {
+                authButton.click();
+            }
+        });
+    </script>
+</body>
+</html>
