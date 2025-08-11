@@ -45,19 +45,19 @@
             gap: 5px;
         }
         
-        .auth-screen, .profile-screen {
+        .auth-screen, .profile-screen, .forgot-password-screen {
             padding: 50px 30px;
             height: 100%;
             display: flex;
             flex-direction: column;
         }
         
-        .auth-screen {
+        .auth-screen, .forgot-password-screen {
             justify-content: center;
             text-align: center;
         }
         
-        .profile-screen {
+        .profile-screen, .forgot-password-screen {
             display: none;
         }
         
@@ -125,10 +125,17 @@
             transform: none;
         }
         
-        .switch-auth {
+        .switch-auth, .forgot-password-link {
             color: #667eea;
             text-decoration: none;
             font-weight: 600;
+        }
+        
+        .forgot-password-link {
+            font-size: 14px;
+            display: block;
+            margin-bottom: 20px;
+            text-align: center;
         }
         
         .error-message {
@@ -136,6 +143,28 @@
             font-size: 14px;
             margin-top: 10px;
             text-align: center;
+        }
+        
+        .success-message {
+            color: #27ae60;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .back-to-login {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 20px;
+        }
+        
+        .back-to-login:hover {
+            text-decoration: underline;
         }
         
         .profile-header {
@@ -344,6 +373,9 @@
                     <input type="text" id="enrollmentId" placeholder="Enter your enrollment ID">
                 </div>
                 
+                <!-- Forgot Password Link (only show in sign in mode) -->
+                <a href="#" id="forgotPasswordLink" class="forgot-password-link">Forgot Password?</a>
+                
                 <button id="authButton" class="auth-button">Sign In</button>
                 
                 <div>
@@ -352,7 +384,26 @@
                 </div>
                 
                 <div id="errorMessage" class="error-message" style="display: none;"></div>
+                <div id="successMessage" class="success-message" style="display: none;"></div>
             </div>
+        </div>
+        
+        <!-- Forgot Password Screen -->
+        <div id="forgotPasswordScreen" class="forgot-password-screen">
+            <div class="app-title">Reset Password</div>
+            <div class="app-subtitle">Enter your email to receive a password reset link</div>
+            
+            <div class="form-group">
+                <label for="resetEmail">Email</label>
+                <input type="email" id="resetEmail" placeholder="Enter your email address">
+            </div>
+            
+            <button id="resetPasswordBtn" class="auth-button">Send Reset Link</button>
+            
+            <a href="#" id="backToLogin" class="back-to-login">← Back to Login</a>
+            
+            <div id="resetErrorMessage" class="error-message" style="display: none;"></div>
+            <div id="resetSuccessMessage" class="success-message" style="display: none;"></div>
         </div>
         
         <!-- Profile Screen -->
@@ -403,7 +454,7 @@
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
 
         // Firebase configuration
         const firebaseConfig = {
@@ -423,13 +474,20 @@
         // DOM elements
         const authScreen = document.getElementById('authScreen');
         const profileScreen = document.getElementById('profileScreen');
+        const forgotPasswordScreen = document.getElementById('forgotPasswordScreen');
         const authButton = document.getElementById('authButton');
         const switchMode = document.getElementById('switchMode');
         const switchText = document.getElementById('switchText');
         const nameGroup = document.getElementById('nameGroup');
         const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
         const logoutBtn = document.getElementById('logoutBtn');
         const profileName = document.getElementById('profileName');
+        const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+        const backToLogin = document.getElementById('backToLogin');
+        const resetPasswordBtn = document.getElementById('resetPasswordBtn');
+        const resetErrorMessage = document.getElementById('resetErrorMessage');
+        const resetSuccessMessage = document.getElementById('resetSuccessMessage');
 
         let isSignUp = false;
 
@@ -444,26 +502,135 @@
                 switchMode.textContent = 'Sign In';
                 nameGroup.style.display = 'block';
                 document.getElementById('enrollmentGroup').style.display = 'block';
+                forgotPasswordLink.style.display = 'none';
             } else {
                 authButton.textContent = 'Sign In';
                 switchText.textContent = "Don't have an account? ";
                 switchMode.textContent = 'Sign Up';
                 nameGroup.style.display = 'none';
                 document.getElementById('enrollmentGroup').style.display = 'none';
+                forgotPasswordLink.style.display = 'block';
             }
             hideError();
+            hideSuccess();
+        });
+
+        // Show forgot password screen
+        forgotPasswordLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            authScreen.style.display = 'none';
+            forgotPasswordScreen.style.display = 'flex';
+            hideResetMessages();
+        });
+
+        // Back to login screen
+        backToLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            forgotPasswordScreen.style.display = 'none';
+            authScreen.style.display = 'flex';
+            hideResetMessages();
+            document.getElementById('resetEmail').value = '';
         });
 
         // Show error message
         function showError(message) {
             errorMessage.textContent = message;
             errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
         }
 
         // Hide error message
         function hideError() {
             errorMessage.style.display = 'none';
         }
+
+        // Show success message
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+
+        // Hide success message
+        function hideSuccess() {
+            successMessage.style.display = 'none';
+        }
+
+        // Show reset error message
+        function showResetError(message) {
+            resetErrorMessage.textContent = message;
+            resetErrorMessage.style.display = 'block';
+            resetSuccessMessage.style.display = 'none';
+        }
+
+        // Show reset success message
+        function showResetSuccess(message) {
+            resetSuccessMessage.textContent = message;
+            resetSuccessMessage.style.display = 'block';
+            resetErrorMessage.style.display = 'none';
+        }
+
+        // Hide reset messages
+        function hideResetMessages() {
+            resetErrorMessage.style.display = 'none';
+            resetSuccessMessage.style.display = 'none';
+        }
+
+        // Handle password reset
+        resetPasswordBtn.addEventListener('click', async () => {
+            const email = document.getElementById('resetEmail').value;
+
+            if (!email) {
+                showResetError('Please enter your email address');
+                return;
+            }
+
+            // Basic email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showResetError('Please enter a valid email address');
+                return;
+            }
+
+            resetPasswordBtn.disabled = true;
+            resetPasswordBtn.textContent = 'Sending...';
+            hideResetMessages();
+
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showResetSuccess('Password reset email sent! Check your inbox and spam folder.');
+                
+                // Clear the email field after successful send
+                document.getElementById('resetEmail').value = '';
+                
+                // Auto redirect to login after 3 seconds
+                setTimeout(() => {
+                    forgotPasswordScreen.style.display = 'none';
+                    authScreen.style.display = 'flex';
+                    hideResetMessages();
+                }, 3000);
+                
+            } catch (error) {
+                let errorMsg = 'Failed to send reset email';
+                
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMsg = 'No account found with this email address';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMsg = 'Invalid email address';
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMsg = 'Too many attempts. Please try again later';
+                        break;
+                }
+                
+                showResetError(errorMsg);
+            } finally {
+                resetPasswordBtn.disabled = false;
+                resetPasswordBtn.textContent = 'Send Reset Link';
+            }
+        });
 
         // Handle authentication
         authButton.addEventListener('click', async () => {
@@ -494,6 +661,7 @@
             authButton.disabled = true;
             authButton.textContent = 'Loading...';
             hideError();
+            hideSuccess();
 
             try {
                 if (isSignUp) {
@@ -504,8 +672,10 @@
                     
                     // Store enrollment ID in user's profile (you can also use Firestore for this)
                     console.log('User created with enrollment ID:', enrollmentId);
+                    showSuccess('Account created successfully!');
                 } else {
                     await signInWithEmailAndPassword(auth, email, password);
+                    showSuccess('Signed in successfully!');
                 }
             } catch (error) {
                 let errorMsg = 'Authentication failed';
@@ -525,6 +695,9 @@
                         break;
                     case 'auth/invalid-email':
                         errorMsg = 'Invalid email format';
+                        break;
+                    case 'auth/invalid-credential':
+                        errorMsg = 'Invalid email or password';
                         break;
                 }
                 
@@ -627,6 +800,7 @@
                 currentUser = user;
                 // User is signed in
                 authScreen.style.display = 'none';
+                forgotPasswordScreen.style.display = 'none';
                 profileScreen.style.display = 'flex';
                 
                 // Load first profile from other users
@@ -634,6 +808,7 @@
             } else {
                 // User is signed out
                 authScreen.style.display = 'flex';
+                forgotPasswordScreen.style.display = 'none';
                 profileScreen.style.display = 'none';
                 currentUser = null;
             }
@@ -760,20 +935,14 @@
 
         // Handle keyboard events
         document.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && authScreen.style.display !== 'none') {
-                authButton.click();
+            if (e.key === 'Enter') {
+                if (authScreen.style.display !== 'none') {
+                    authButton.click();
+                } else if (forgotPasswordScreen.style.display !== 'none') {
+                    resetPasswordBtn.click();
+                }
             }
         });
     </script>
 </body>
-
 </html>
-
-
-
-
-
-
-
-
-
