@@ -10,6 +10,8 @@ UI ✓
 
 Frontend ✓
 
-Backend [(wip)](https://letmegooglethat.com/?q=wip+meaning)
+[Backend wip](https://gprivate.com/6hybx)
 
-Database [(wip)](https://letmegooglethat.com/?q=wip+meaning)
+[Database wip](https://gprivate.com/6hyby)
+
+[Storage wip ](https://gprivate.com/6hybz)
