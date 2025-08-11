@@ -685,7 +685,7 @@
                         errorMsg = 'Email already in use';
                         break;
                     case 'auth/weak-password':
-                        errorMsg = 'Password should be at least 6 characters';
+                        errorMsg = 'Password should be at least 8+ characters';
                         break;
                     case 'auth/user-not-found':
                         errorMsg = 'User not found';
@@ -844,7 +844,7 @@
                 profileHeader.style.opacity = '1';
             }, 300);
             
-            console.log('Profile liked - It\'s a match! 💕');
+            console.log('Profile liked - Liked! 💕');
             
             // You could show a match popup here
             showMatchNotification();
@@ -867,7 +867,7 @@
                 z-index: 1000;
                 animation: matchPop 2s ease-in-out forwards;
             `;
-            notification.textContent = "It's a Match! 💕";
+            notification.textContent = "Liked! 💕";
             document.body.appendChild(notification);
             
             // Add CSS animation
@@ -915,19 +915,19 @@
                 case 'messages':
                     console.log('Messages tab selected');
                     // Show messages/chat list
-                    alert('Messages feature coming soon! 💬');
+                    alert('Messages feature cuming soon! 💬');
                     break;
                 case 'notifications':
                     console.log('Notifications tab selected');
                     // Show notifications/alerts
-                    alert('You have new matches! 🔔');
+                    alert('You have no new matches! Bcz you Nigga 🔔');
                     break;
                 case 'profile':
                     console.log('Profile tab selected');
                     // Show user's own profile
                     if (currentUser) {
                         const userName = currentUser.displayName || currentUser.email.split('@')[0];
-                        alert(`Welcome ${userName}! 👤\n\nProfile settings coming soon...`);
+                        alert(`Welcome ${userName}! 👤\n\nProfile settings cuming soon...`);
                     }
                     break;
             }
@@ -946,4 +946,5 @@
     </script>
 </body>
 </html>
+
 
